@@ -70,7 +70,7 @@ function renderImg(images) {
 
 function onSearch(e) {
   e.preventDefault();
-  observer.unobserve(refs.sentinel);
+  // observer.unobserve(refs.sentinel);
 
   galleryApiService.query = e.currentTarget.elements.searchQuery.value;
 
