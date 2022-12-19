@@ -71,6 +71,7 @@ function renderImg(images) {
 function onSearch(e) {
   e.preventDefault();
   // observer.unobserve(refs.sentinel);
+  clearMarkup();
 
   galleryApiService.query = e.currentTarget.elements.searchQuery.value;
 
@@ -89,7 +90,6 @@ function onSearch(e) {
       }
       Notify.success(`Hooray! We found ${totalHits} images.`);
       // observer.observe(refs.sentinel);
-      clearMarkup();
 
       renderImg(hits);
       observer.observe(refs.sentinel);
