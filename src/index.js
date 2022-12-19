@@ -18,9 +18,10 @@ const lightbox = new SimpleLightbox('.gallery a');
 const galleryApiService = new GalleryApiService();
 const observer = new IntersectionObserver(onEntry, {
   rootMargin: '150px',
+  root: null,
+  rootMargin: '0px 0px 200px 0px',
+  threshold: 1.0,
 });
-
-observer.observe(refs.sentinel);
 
 refs.searchButton.setAttribute('disabled', true);
 
@@ -91,7 +92,6 @@ function onSearch(e) {
       clearMarkup();
 
       renderImg(hits);
-      scroll();
       observer.observe(refs.sentinel);
       lightbox.refresh();
     })
@@ -105,7 +105,7 @@ function onEntry(entries) {
         .fetchGallery()
         .then(({ hits, totalHits }) => {
           renderImg(hits);
-          // scroll();
+          scroll();
           lightbox.refresh();
           console.log(galleryApiService.page);
           console.log(Math.ceil(totalHits / 40));
