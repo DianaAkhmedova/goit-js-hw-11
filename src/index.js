@@ -14,10 +14,9 @@ const refs = {
   sentinel: document.querySelector('#sentinel'),
 };
 
-const lightbox = new SimpleLightbox('.gallery a');
 const galleryApiService = new GalleryApiService();
+const lightbox = new SimpleLightbox('.gallery a');
 const observer = new IntersectionObserver(onEntry, {
-  rootMargin: '150px',
   root: null,
   rootMargin: '0px 0px 200px 0px',
   threshold: 1.0,
@@ -68,9 +67,15 @@ function renderImg(images) {
   refs.gallery.insertAdjacentHTML('beforeend', markup);
 }
 
+function fetchGalleryData() {
+  return galleryApiService.fetchGallery().then(({ data }) => {
+    galleryApiService.incrementPage();
+    return data;
+  });
+}
+
 function onSearch(e) {
   e.preventDefault();
-  // observer.unobserve(refs.sentinel);
   clearMarkup();
 
   galleryApiService.query = e.currentTarget.elements.searchQuery.value;
@@ -81,16 +86,13 @@ function onSearch(e) {
 
   refs.notification.classList.add('visually-hidden');
 
-  galleryApiService
-    .fetchGallery()
+  fetchGalleryData()
     .then(({ hits, totalHits }) => {
       if (hits.length === 0) {
         onFetchError();
         return;
       }
       Notify.success(`Hooray! We found ${totalHits} images.`);
-      // observer.observe(refs.sentinel);
-
       renderImg(hits);
       observer.observe(refs.sentinel);
       lightbox.refresh();
@@ -100,15 +102,11 @@ function onSearch(e) {
 
 function onEntry(entries) {
   entries.forEach(entry => {
-    if (entry.isIntersecting && galleryApiService.query !== '') {
-      galleryApiService
-        .fetchGallery()
+    if (entry.isIntersecting && galleryApiService.page !== 1) {
+      fetchGalleryData()
         .then(({ hits, totalHits }) => {
           renderImg(hits);
-          scroll();
           lightbox.refresh();
-          console.log(galleryApiService.page);
-          console.log(Math.ceil(totalHits / 40));
           if (galleryApiService.page >= Math.ceil(totalHits / 40)) {
             Notify.info(
               "We're sorry, but you've reached the end of search results."
@@ -131,17 +129,6 @@ function onFetchError() {
 
 function clearMarkup() {
   refs.gallery.innerHTML = '';
-}
-
-function scroll() {
-  const { height: cardHeight } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
 }
 
 refs.input.addEventListener('input', hundleImput);

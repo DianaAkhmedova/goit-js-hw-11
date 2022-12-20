@@ -9,7 +9,7 @@ export default class GalleryApiService {
     this.page = 1;
   }
 
-  fetchGallery() {
+  async fetchGallery() {
     const searchParams = new URLSearchParams({
       key: API_KEY,
       q: this.searchQuery,
@@ -21,17 +21,12 @@ export default class GalleryApiService {
     });
     const url = `${BASE_URL}/?${searchParams}`;
 
-    // return fetch(url).then(response => {
-    //   if (!response.ok) {
-    //     onFetchError();
-    //   }
-    //   return response.json();
-    // });
-
-    return axios.get(url).then(({ data }) => {
-      this.incrementPage();
-      return data;
-    });
+    try {
+      const response = await axios.get(url);
+      return response;
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 
   incrementPage() {
