@@ -2,17 +2,10 @@ import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import GalleryApiService from './js/gallery-service';
 import { btnUp } from './js/btn-up';
+import { getRefs } from './js/refs';
+import { renderGallery } from './js/render-gallery';
 import './css/styles.css';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-
-const refs = {
-  input: document.querySelector('[name="searchQuery"]'),
-  form: document.querySelector('.search-form'),
-  searchButton: document.querySelector('[type="submit"]'),
-  gallery: document.querySelector('.gallery'),
-  notification: document.querySelector('.notification'),
-  sentinel: document.querySelector('#sentinel'),
-};
 
 const galleryApiService = new GalleryApiService();
 const lightbox = new SimpleLightbox('.gallery a');
@@ -21,6 +14,8 @@ const observer = new IntersectionObserver(onEntry, {
   rootMargin: '0px 0px 200px 0px',
   threshold: 1.0,
 });
+
+const refs = getRefs();
 
 refs.searchButton.setAttribute('disabled', true);
 
@@ -31,40 +26,6 @@ function hundleImput(e) {
   }
 
   return refs.searchButton.setAttribute('disabled', true);
-}
-
-function renderImg(images) {
-  const markup = images
-    .map(
-      ({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => `<div class="photo-card"><div class="thumb"><a class="gallery__item" href=${largeImageURL}>
-      <img class="gallery__image" src=${webformatURL} alt=${tags} loading="lazy" width=320 /></a></div>
-      <div class="info">
-        <p class="info-item">
-          <b>Likes</b><span>${likes}</span>
-        </p>
-        <p class="info-item">
-          <b>Views</b><span>${views}</span>
-        </p>
-        <p class="info-item">
-          <b>Comments</b><span>${comments}</span>
-        </p>
-        <p class="info-item">
-          <b>Downloads</b><span>${downloads}</span>
-        </p>
-      </div>
-    </div>`
-    )
-    .join('');
-
-  refs.gallery.insertAdjacentHTML('beforeend', markup);
 }
 
 function fetchGalleryData() {
@@ -93,7 +54,7 @@ function onSearch(e) {
         return;
       }
       Notify.success(`Hooray! We found ${totalHits} images.`);
-      renderImg(hits);
+      renderGallery(hits);
       observer.observe(refs.sentinel);
       lightbox.refresh();
     })
@@ -105,7 +66,7 @@ function onEntry(entries) {
     if (entry.isIntersecting && galleryApiService.page !== 1) {
       fetchGalleryData()
         .then(({ hits, totalHits }) => {
-          renderImg(hits);
+          renderGallery(hits);
           lightbox.refresh();
           if (galleryApiService.page >= Math.ceil(totalHits / 40)) {
             Notify.info(
